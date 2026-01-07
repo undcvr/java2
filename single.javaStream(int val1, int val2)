@@ -1,0 +1,62 @@
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+record Pair(int val1, int val2) {
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Pair other)) return false;
+        return (this.val1 + this.val2) == (other.val1 + other.val2);
+    }
+
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(val1 + val2);
+    }
+}
+
+class Container {
+
+    private final Set<Pair> pairs;
+
+    public Container(List<Pair> list) {
+        // Можно использовать HashSet или LinkedHashSet
+        this.pairs = new LinkedHashSet<>();
+        if (list != null) {
+            this.pairs.addAll(list);
+        }
+    }
+
+    /**
+     * Метод process через Stream API
+     * Возвращает список чисел val1 * val2, которые удовлетворяют условию -150 <= product < 150
+     * Сортировка по убыванию
+     */
+    public List<Integer> process() {
+        return pairs.stream() // поток элементов Set<Pair>
+                .filter(p -> p != null) // убираем null
+                .map(p -> (long) p.val1() * (long) p.val2()) // вычисляем произведение
+                .filter(product -> product >= -150 && product < 150) // фильтруем по условию
+                .map(Long::intValue) // преобразуем в int
+                .sorted(Comparator.reverseOrder()) // сортировка по убыванию
+                .collect(Collectors.toList()); // собираем в List<Integer>
+    }
+
+    /**
+     * Метод removeOnCondition через Stream API
+     * Удаляет элементы, где val1 + val2 < 0
+     */
+    public void removeOnCondition() {
+        Set<Pair> filtered = pairs.stream()
+                .filter(p -> p != null && (p.val1() + p.val2()) >= 0) // оставляем только подходящие
+                .collect(Collectors.toCollection(LinkedHashSet::new)); // собираем обратно в LinkedHashSet
+
+        pairs.clear(); // очищаем оригинальный set
+        pairs.addAll(filtered); // добавляем отфильтрованные элементы
+    }
+}
