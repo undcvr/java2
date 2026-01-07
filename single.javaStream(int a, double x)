@@ -1,0 +1,72 @@
+package untitled2;
+
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+/**
+ * Шаг 1: создаем record Pair с двумя полями: int a и double x
+ */
+record Pair(int a, double x) {
+    /**
+     * Переопределяем equals, если есть особое условие равенства.
+     * Здесь равны, если сумма a + x одинакова
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Pair other)) return false;
+        return (this.a + this.x) == (other.a + other.x);
+    }
+
+    @Override
+    public int hashCode() {
+        return Double.valueOf(a + x).hashCode();
+    }
+}
+
+/**
+ * Шаг 2: создаем класс Container для работы с множеством Pair
+ */
+class Container {
+
+    private final Set<Pair> pairs;
+
+    public Container(List<Pair> list) {
+        this.pairs = new LinkedHashSet<>(); // сохраняем порядок вставки
+        if (list != null) {
+            this.pairs.addAll(list);
+        }
+    }
+
+    /**
+     * Шаг 3: метод process через Stream API
+     * Возвращает список int, где -150 <= a*x < 150
+     * Сортировка по убыванию
+     */
+    public List<Integer> process() {
+        return pairs.stream()                       // поток элементов Set<Pair>
+                .filter(p -> p != null)            // убираем null
+                .map(p -> p.a() * p.x())           // вычисляем произведение a*x
+                .filter(product -> product >= -150 && product < 150) // фильтруем
+                .map(Double::intValue)             // преобразуем double в int
+                .sorted(Comparator.reverseOrder()) // сортировка по убыванию
+                .collect(Collectors.toList());     // собираем в List<Integer>
+    }
+
+    /**
+     * Шаг 4: метод removeOnCondition через Stream API
+     * Удаляем элементы, где a + x < 0
+     */
+    public void removeOnCondition() {
+        Set<Pair> filtered = pairs.stream()
+                .filter(p -> p != null && (p.a() + p.x()) >= 0) // оставляем только подходящие
+                .collect(Collectors.toCollection(LinkedHashSet::new)); // собираем в LinkedHashSet
+
+        pairs.clear();
+        pairs.addAll(filtered);
+    }
+}
