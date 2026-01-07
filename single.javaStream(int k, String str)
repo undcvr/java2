@@ -1,0 +1,62 @@
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+record Pair(int k, String str) {
+    // Равенство только по полю k
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Pair other)) return false;
+        return this.k == other.k;
+    }
+
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(k);
+    }
+}
+
+class Container {
+    // Set с уникальными Pair
+    private final Set<Pair> pairs;
+
+    // Конструктор: инициализация set из списка
+    public Container(List<Pair> list) {
+        this.pairs = new LinkedHashSet<>();
+        if (list != null) {
+            this.pairs.addAll(list);
+        }
+    }
+
+    /**
+     * Метод process с использованием Stream API
+     * Возвращает список строк s, где s = первый символ str, повторенный k раз
+     * Условие: 1 <= str.length() < 5 && k > 0
+     */
+    public List<String> process() {
+        return pairs.stream()                          // поток элементов Set<Pair>
+                .filter(p -> p != null)               // убираем null
+                .filter(p -> p.k() > 0)               // k > 0
+                .filter(p -> p.str() != null)         // str != null
+                .filter(p -> p.str().length() >= 1 && p.str().length() < 5) // 1 <= len < 5
+                .map(p -> String.valueOf(p.str().charAt(0)).repeat(p.k())) // повторяем первый символ k раз
+                .sorted()                              // сортировка по возрастанию
+                .collect(Collectors.toList());         // собираем в List<String>
+    }
+
+    /**
+     * Метод removeOnCondition с использованием Stream API
+     * Удаляет все элементы, где k < 4
+     */
+    public void removeOnCondition() {
+        // фильтруем и собираем обратно в LinkedHashSet
+        Set<Pair> filtered = pairs.stream()
+                .filter(p -> p != null && p.k() >= 4) // оставляем только k >= 4
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        pairs.clear();
+        pairs.addAll(filtered);
+    }
+}
