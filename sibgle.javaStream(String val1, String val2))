@@ -1,0 +1,73 @@
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+record Pair(String val1, String val2) {
+
+    /**
+     * Равенство: если суммарная длина строк одинакова
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Pair other)) return false;
+        return (length(val1) + length(val2))
+                == (length(other.val1) + length(other.val2));
+    }
+
+    @Override
+    public int hashCode() {
+        return Integer.hashCode(length(val1) + length(val2));
+    }
+
+    private static int length(String s) {
+        return s == null ? 0 : s.length();
+    }
+}
+
+class Container {
+
+    private final Set<Pair> pairs;
+
+    public Container(List<Pair> list) {
+        this.pairs = new LinkedHashSet<>();
+        if (list != null) {
+            this.pairs.addAll(list);
+        }
+    }
+
+    /**
+     * process():
+     * 1) берем пример: суммарная длина строк
+     * 2) условие: 1 <= sumLength < 150
+     * 3) сортировка по убыванию
+     */
+    public List<Integer> process() {
+        return pairs.stream()
+                .filter(p -> p != null)
+                .map(p -> length(p.val1()) + length(p.val2()))
+                .filter(sum -> sum >= 1 && sum < 150)
+                .sorted(Comparator.reverseOrder())
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * removeOnCondition():
+     * удаляем пары, где суммарная длина строк < 5
+     */
+    public void removeOnCondition() {
+        Set<Pair> filtered = pairs.stream()
+                .filter(p -> (length(p.val1()) + length(p.val2())) >= 5)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        pairs.clear();
+        pairs.addAll(filtered);
+    }
+
+    private static int length(String s) {
+        return s == null ? 0 : s.length();
+    }
+}
